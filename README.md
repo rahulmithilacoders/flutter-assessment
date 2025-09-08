@@ -14,4 +14,10 @@ Build a simple Fitness Tracker Dashboard app using Flutter and BLoC architecture
 - Add unit tests for the BLoC
 - Handle possible error with a retry button.
 
+You may use the following wireframe as guidance for the design:
+
+<img width="402" height="874" alt="rough-wireframe-for-steps-tracker" src="https://github.com/user-attachments/assets/e71216b2-7591-4f4f-a55b-bcc8e73b816c" />
+
+_Note: You don't need to worry about the design. This is not a design assessment._
+
 [:arrow_left: Go back to main branch](https://github.com/OttrTechnology/flutter-assessment#getting-started)
