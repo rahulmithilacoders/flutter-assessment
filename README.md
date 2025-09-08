@@ -1,16 +1,13 @@
-# flutter_assessment
+## Getting started
 
-A new Flutter project.
+1. Fork this project and make sure to **uncheck** the "Copy the main branch only." option.
+2. Clone **your forked repo** in your local machine.
+3. Visit the branch of the challenge you have been assigned.
+4. You'll find further instructions in the `README.md` file of each challenge.
 
-## Getting Started
+# Challenges
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+| Branch                                                                                         |   Difficulty |
+| :--------------------------------------------------------------------------------------------- | -----------: |
+| [Posts & Details](https://github.com/OttrTechnology/flutter-assessment/tree/posts-and-details) |       :star: |
+| [Steps Tracker](https://github.com/OttrTechnology/flutter-assessment/tree/steps-tracker)       | :star::star: |
