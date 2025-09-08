@@ -7,7 +7,7 @@
 
 # Challenges
 
-| Branch                                                                                         |   Difficulty |
-| :--------------------------------------------------------------------------------------------- | -----------: |
-| [Posts & Details](https://github.com/OttrTechnology/flutter-assessment/tree/posts-and-details) |       :star: |
-| [Steps Tracker](https://github.com/OttrTechnology/flutter-assessment/tree/steps-tracker)       | :star::star: |
+| Branch                                                                                                           |   Difficulty |
+| :--------------------------------------------------------------------------------------------------------------- | -----------: |
+| [Posts & Details](https://github.com/OttrTechnology/flutter-assessment/tree/posts-and-details#posts--details)    |       :star: |
+| [Steps Tracker](https://github.com/OttrTechnology/flutter-assessment/tree/steps-tracker#steps-tracker-challenge) | :star::star: |
