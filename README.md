@@ -1,13 +1,17 @@
-## Getting started
+# Steps Tracker Challenge
+Build a simple Fitness Tracker Dashboard app using Flutter and BLoC architecture, that fetches real step count data from the health package.
 
-1. Fork this project and make sure to **uncheck** the "Copy the main branch only." option.
-2. Clone **your forked repo** in your local machine.
-3. Visit the branch of the challenge you have been assigned.
-4. You'll find further instructions in the `README.md` file of each challenge.
+### **__Requirements:__**
+- Display today’s steps count (from health package)
+- Show a progress bar towards a daily goal of 10,000 steps
+- Show the last 7 days’ steps in a list (e.g., “Mon – 8230 steps”).
+- Add pull-to-refresh on the dashboard. (When pulled, trigger a BLoC event to re-fetch today's step data.)
+- Show loading spinner when fetching data from health.
 
-# Challenges
+### **__Bonus(optional):__**
+- Show percentage completion for each day (of the 10,000 target).
+- Let user set a custom daily goal.
+- Add unit tests for the BLoC
+- Handle possible error with a retry button.
 
-| Branch                                                                                         |   Difficulty |
-| :--------------------------------------------------------------------------------------------- | -----------: |
-| [Posts & Details](https://github.com/OttrTechnology/flutter-assessment/tree/posts-and-details) |       :star: |
-| [Steps Tracker](https://github.com/OttrTechnology/flutter-assessment/tree/steps-tracker)       | :star::star: |
+[:arrow_left: Go back to main branch](https://github.com/OttrTechnology/flutter-assessment#getting-started)
