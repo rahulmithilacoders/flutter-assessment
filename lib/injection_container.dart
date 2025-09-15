@@ -38,5 +38,7 @@ Future<void> init() async {
   );
 
   // External
-  sl.registerLazySingleton(() => Health());
+  final health = Health();
+  await health.configure();
+  sl.registerLazySingleton(() => health);
 }
