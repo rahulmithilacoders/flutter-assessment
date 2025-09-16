@@ -1,8 +1,12 @@
+import 'dart:developer' as dev;
+
 import 'package:health/health.dart';
 import 'package:intl/intl.dart';
-import '../models/step_data_model.dart';
-import '../models/daily_step_summary_model.dart';
+
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/health_connect/health_connect_exception_handler.dart';
+import '../models/daily_step_summary_model.dart';
+import '../models/step_data_model.dart';
 
 abstract class HealthDataSource {
   Future<StepDataModel?> getTodaySteps();
@@ -17,23 +21,34 @@ class HealthDataSourceImpl implements HealthDataSource {
 
   @override
   Future<bool> requestPermissions() async {
-    final types = [HealthDataType.STEPS];
-    
     try {
-      bool hasPermission = await health.hasPermissions(types) ?? false;
-      
-      if (!hasPermission) {
-        hasPermission = await health.requestAuthorization(types);
+      final isInstalled =
+          await HealthConnectExceptionHandler.isHealthConnectInstalled();
+      if (!isInstalled) {
+        throw HealthConnectExceptionHandler.createAppNotInstalledException();
       }
-      
-      return hasPermission;
+
+      final hasPermission =
+          await HealthConnectExceptionHandler.hasRequiredPermissions();
+      if (!hasPermission) {
+        final granted = await health.requestAuthorization([HealthDataType.STEPS]);
+
+        if (!granted) {
+          throw HealthConnectExceptionHandler.createPermissionDeniedException();
+        }
+      }
+
+      return true;
     } catch (e) {
-      // On Android, if Google Fit is not available, we might get an error
-      // In this case, we can try to proceed anyway as the error might be about
-      // the permission launcher, but step counting could still work
-      // ignore: avoid_print
-      print('Health permission request failed: $e');
-      return true; // Allow the app to continue and try to get data
+      if (e is HealthConnectException) {
+        rethrow;
+      }
+
+      // Handle other unexpected errors
+      dev.log('Health permission request failed: $e');
+      final healthException =
+          HealthConnectExceptionHandler.mapErrorToHealthConnectException(e);
+      throw healthException;
     }
   }
 
@@ -57,18 +72,18 @@ class HealthDataSourceImpl implements HealthDataSource {
         }
       }
 
-      return StepDataModel(
-        date: startOfDay,
-        steps: totalSteps,
-      );
+      return StepDataModel(date: startOfDay, steps: totalSteps);
     } catch (e) {
-      // ignore: avoid_print
-      print('Error getting today steps: $e');
-      // Return a model with 0 steps instead of null to show the UI
-      return StepDataModel(
-        date: startOfDay,
-        steps: 0,
-      );
+      dev.log('Error getting today steps: $e');
+
+      // Check if it's a known health connect issue
+      final errorString = e.toString().toLowerCase();
+      if (errorString.contains('health connect') || errorString.contains('permission')) {
+        throw HealthConnectExceptionHandler.mapErrorToHealthConnectException(e);
+      }
+
+      // For other errors, return fallback data
+      return StepDataModel(date: startOfDay, steps: 0);
     }
   }
 
@@ -76,7 +91,9 @@ class HealthDataSourceImpl implements HealthDataSource {
   Future<List<DailyStepSummaryModel>> getWeeklySteps() async {
     final now = DateTime.now();
     final endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
-    final startDate = endDate.subtract(Duration(days: AppConstants.daysToShow - 1));
+    final startDate = endDate.subtract(
+      Duration(days: AppConstants.daysToShow - 1),
+    );
 
     try {
       final healthData = await health.getHealthDataFromTypes(
@@ -86,48 +103,59 @@ class HealthDataSourceImpl implements HealthDataSource {
       );
 
       Map<String, int> dailySteps = {};
-      
+
       for (var data in healthData) {
         if (data.type == HealthDataType.STEPS) {
           final dateKey = DateFormat('yyyy-MM-dd').format(data.dateFrom);
-          dailySteps[dateKey] = (dailySteps[dateKey] ?? 0) + 
+          dailySteps[dateKey] =
+              (dailySteps[dateKey] ?? 0) +
               (data.value as NumericHealthValue).numericValue.toInt();
         }
       }
 
       List<DailyStepSummaryModel> weeklyData = [];
-      
+
       for (int i = AppConstants.daysToShow - 1; i >= 0; i--) {
         final date = now.subtract(Duration(days: i));
         final dateKey = DateFormat('yyyy-MM-dd').format(date);
         final dayName = DateFormat('EEE').format(date);
         final steps = dailySteps[dateKey] ?? 0;
 
-        weeklyData.add(DailyStepSummaryModel(
-          date: date,
-          steps: steps,
-          goalSteps: AppConstants.defaultDailyStepGoal,
-          dayName: dayName,
-        ));
+        weeklyData.add(
+          DailyStepSummaryModel(
+            date: date,
+            steps: steps,
+            goalSteps: AppConstants.defaultDailyStepGoal,
+            dayName: dayName,
+          ),
+        );
       }
 
       return weeklyData;
     } catch (e) {
-      // ignore: avoid_print
-      print('Error getting weekly steps: $e');
-      // Return empty list with current week dates and 0 steps
+      dev.log('Error getting weekly steps: $e');
+
+      // Check if it's a known health connect issue
+      final errorString = e.toString().toLowerCase();
+      if (errorString.contains('health connect') || errorString.contains('permission')) {
+        throw HealthConnectExceptionHandler.mapErrorToHealthConnectException(e);
+      }
+
+      // For other errors, return fallback data with 0 steps
       List<DailyStepSummaryModel> weeklyData = [];
-      
+
       for (int i = AppConstants.daysToShow - 1; i >= 0; i--) {
         final date = now.subtract(Duration(days: i));
         final dayName = DateFormat('EEE').format(date);
 
-        weeklyData.add(DailyStepSummaryModel(
-          date: date,
-          steps: 0,
-          goalSteps: AppConstants.defaultDailyStepGoal,
-          dayName: dayName,
-        ));
+        weeklyData.add(
+          DailyStepSummaryModel(
+            date: date,
+            steps: 0,
+            goalSteps: AppConstants.defaultDailyStepGoal,
+            dayName: dayName,
+          ),
+        );
       }
 
       return weeklyData;

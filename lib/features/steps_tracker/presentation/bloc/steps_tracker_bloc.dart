@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/usecases/usecase.dart';
+import '../../../../core/utils/bloc_error_handler.dart';
 import '../../domain/usecases/get_today_steps.dart';
 import '../../domain/usecases/get_weekly_steps.dart';
 import '../../domain/usecases/request_health_permissions.dart';
@@ -45,12 +47,14 @@ class StepsTrackerBloc extends Bloc<StepsTrackerEvent, StepsTrackerState> {
       if (hasPermission) {
         add(LoadStepsDataEvent());
       } else {
-        emit(const StepsTrackerPermissionDenied(
-          message: 'Health permissions are required to track steps',
-        ));
+        emit(
+          const StepsTrackerPermissionDenied(
+            message: 'Health permissions are required to track steps',
+          ),
+        );
       }
     } catch (e) {
-      emit(StepsTrackerError(message: e.toString()));
+      emit(BlocErrorHandler.handleError(e));
     }
   }
 
@@ -59,12 +63,14 @@ class StepsTrackerBloc extends Bloc<StepsTrackerEvent, StepsTrackerState> {
       final todayStepsResult = await getTodaySteps(NoParams());
       final weeklyStepsResult = await getWeeklySteps(NoParams());
 
-      emit(StepsTrackerLoaded(
-        todaySteps: todayStepsResult,
-        weeklySteps: weeklyStepsResult,
-      ));
+      emit(
+        StepsTrackerLoaded(
+          todaySteps: todayStepsResult,
+          weeklySteps: weeklyStepsResult,
+        ),
+      );
     } catch (e) {
-      emit(StepsTrackerError(message: e.toString()));
+      emit(BlocErrorHandler.handleError(e));
     }
   }
 }

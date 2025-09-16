@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../injection_container.dart';
+
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/health_connect/health_connect_exception_handler.dart';
+import '../../../../injection_container.dart';
 import '../bloc/steps_tracker_bloc.dart';
 import '../bloc/steps_tracker_event.dart';
 import '../bloc/steps_tracker_state.dart';
+import '../widgets/error_state_widget.dart';
 import '../widgets/steps_progress_bar.dart';
 import '../widgets/weekly_steps_list.dart';
 
@@ -52,73 +55,42 @@ class StepsTrackerView extends StatelessWidget {
         onRefresh: () async {
           context.read<StepsTrackerBloc>().add(RefreshStepsDataEvent());
         },
-        child: BlocBuilder<StepsTrackerBloc, StepsTrackerState>(
+        child: BlocConsumer<StepsTrackerBloc, StepsTrackerState>(
+          listener: (context, state) {
+            if (state is StepsTrackerHealthConnectError) {
+              HealthConnectExceptionHandler.handleHealthOperation(
+                operation: () => Future.error(
+                  HealthConnectException(
+                    type: state.errorType,
+                    message: state.message,
+                  ),
+                ),
+                context: context,
+                showDialog: true,
+              );
+            }
+          },
           builder: (context, state) {
             if (state is StepsTrackerLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (state is StepsTrackerError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error, size: 64, color: Colors.red),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Error: ${state.message}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<StepsTrackerBloc>().add(LoadStepsDataEvent());
-                      },
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
+              return context.buildErrorState(state.message);
             }
-            
+
+            if (state is StepsTrackerHealthConnectError) {
+              return context.buildHealthConnectErrorState(state.message, state.errorType);
+            }
+
             if (state is StepsTrackerPermissionDenied) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.security, size: 64, color: Colors.orange),
-                      const SizedBox(height: 16),
-                      Text(
-                        state.message,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Note: On Android, you may need to install Google Fit or Samsung Health for step tracking to work properly.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          context.read<StepsTrackerBloc>().add(RequestPermissionsEvent());
-                        },
-                        child: const Text('Grant Permissions'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
+              return context.buildPermissionDeniedState(state.message);
             }
-            
+
             if (state is StepsTrackerLoaded) {
               final todaySteps = state.todaySteps?.steps ?? 0;
               final weeklySteps = state.weeklySteps ?? [];
-              
+
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -143,10 +115,8 @@ class StepsTrackerView extends StatelessWidget {
                 ),
               );
             }
-            
-            return const Center(
-              child: Text('Welcome to Steps Tracker'),
-            );
+
+            return const Center(child: Text('Welcome to Steps Tracker'));
           },
         ),
       ),
