@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/Exception/health_connect_exception_handler.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/health_connect/health_connect_exception_handler.dart';
 import '../../../../injection_container.dart';
 import '../bloc/steps_tracker_bloc.dart';
 import '../bloc/steps_tracker_event.dart';
@@ -80,7 +80,10 @@ class StepsTrackerView extends StatelessWidget {
             }
 
             if (state is StepsTrackerHealthConnectError) {
-              return context.buildHealthConnectErrorState(state.message, state.errorType);
+              return context.buildHealthConnectErrorState(
+                state.message,
+                state.errorType,
+              );
             }
 
             if (state is StepsTrackerPermissionDenied) {

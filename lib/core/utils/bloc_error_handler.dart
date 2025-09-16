@@ -1,5 +1,5 @@
-import '../health_connect/health_connect_exception_handler.dart';
 import '../../features/steps_tracker/presentation/bloc/steps_tracker_state.dart';
+import '../Exception/health_connect_exception_handler.dart';
 
 class BlocErrorHandler {
   static StepsTrackerState handleError(dynamic error) {

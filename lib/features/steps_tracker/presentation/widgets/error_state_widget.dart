@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/Exception/health_connect_exception_handler.dart';
 import '../../../../core/constants/error_messages.dart';
-import '../../../../core/health_connect/health_connect_exception_handler.dart';
 import '../bloc/steps_tracker_bloc.dart';
 import '../bloc/steps_tracker_event.dart';
 
@@ -93,10 +93,7 @@ class ErrorStateWidget extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: onRetry,
-              child: Text(buttonText),
-            ),
+            ElevatedButton(onPressed: onRetry, child: Text(buttonText)),
           ],
         ),
       ),
@@ -113,7 +110,10 @@ extension ErrorStateHelper on BuildContext {
     );
   }
 
-  Widget buildHealthConnectErrorState(String message, HealthConnectErrorType errorType) {
+  Widget buildHealthConnectErrorState(
+    String message,
+    HealthConnectErrorType errorType,
+  ) {
     return ErrorStateWidget.healthConnect(
       message: message,
       errorType: errorType,

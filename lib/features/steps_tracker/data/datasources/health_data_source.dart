@@ -3,8 +3,8 @@ import 'dart:developer' as dev;
 import 'package:health/health.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/Exception/health_connect_exception_handler.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/health_connect/health_connect_exception_handler.dart';
 import '../models/daily_step_summary_model.dart';
 import '../models/step_data_model.dart';
 
@@ -31,7 +31,9 @@ class HealthDataSourceImpl implements HealthDataSource {
       final hasPermission =
           await HealthConnectExceptionHandler.hasRequiredPermissions();
       if (!hasPermission) {
-        final granted = await health.requestAuthorization([HealthDataType.STEPS]);
+        final granted = await health.requestAuthorization([
+          HealthDataType.STEPS,
+        ]);
 
         if (!granted) {
           throw HealthConnectExceptionHandler.createPermissionDeniedException();
@@ -78,7 +80,8 @@ class HealthDataSourceImpl implements HealthDataSource {
 
       // Check if it's a known health connect issue
       final errorString = e.toString().toLowerCase();
-      if (errorString.contains('health connect') || errorString.contains('permission')) {
+      if (errorString.contains('health connect') ||
+          errorString.contains('permission')) {
         throw HealthConnectExceptionHandler.mapErrorToHealthConnectException(e);
       }
 
@@ -137,7 +140,8 @@ class HealthDataSourceImpl implements HealthDataSource {
 
       // Check if it's a known health connect issue
       final errorString = e.toString().toLowerCase();
-      if (errorString.contains('health connect') || errorString.contains('permission')) {
+      if (errorString.contains('health connect') ||
+          errorString.contains('permission')) {
         throw HealthConnectExceptionHandler.mapErrorToHealthConnectException(e);
       }
 

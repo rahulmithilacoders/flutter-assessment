@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../../core/health_connect/health_connect_exception_handler.dart';
+import '../../../../core/Exception/health_connect_exception_handler.dart';
 import '../../domain/entities/daily_step_summary.dart';
 import '../../domain/entities/step_data.dart';
 
