@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/Exception/health_connect_exception_handler.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/usecases/usecase.dart';
 import '../../../../injection_container.dart';
+import '../../domain/usecases/write_mock_steps_data.dart';
 import '../bloc/steps_tracker_bloc.dart';
 import '../bloc/steps_tracker_event.dart';
 import '../bloc/steps_tracker_state.dart';
@@ -122,6 +124,34 @@ class StepsTrackerView extends StatelessWidget {
             return const Center(child: Text('Welcome to Steps Tracker'));
           },
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final writeMockData = sl<WriteMockStepsData>();
+          final success = await writeMockData(NoParams());
+          
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  success 
+                    ? 'Mock step data written successfully! Refresh to see data.'
+                    : 'Failed to write mock data. Please grant WRITE permissions in Health Connect.',
+                ),
+                backgroundColor: success ? Colors.green : Colors.red,
+                duration: Duration(seconds: success ? 3 : 5),
+              ),
+            );
+            
+            if (success) {
+              // Refresh data after writing mock data
+              context.read<StepsTrackerBloc>().add(RefreshStepsDataEvent());
+            }
+          }
+        },
+        label: const Text('Add Mock Data'),
+        icon: const Icon(Icons.add_chart),
+        backgroundColor: Colors.blue,
       ),
     );
   }

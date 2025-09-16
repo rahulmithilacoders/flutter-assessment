@@ -12,6 +12,7 @@ abstract class HealthDataSource {
   Future<StepDataModel?> getTodaySteps();
   Future<List<DailyStepSummaryModel>> getWeeklySteps();
   Future<bool> requestPermissions();
+  Future<bool> writeMockStepsData();
 }
 
 class HealthDataSourceImpl implements HealthDataSource {
@@ -28,16 +29,14 @@ class HealthDataSourceImpl implements HealthDataSource {
         throw HealthConnectExceptionHandler.createAppNotInstalledException();
       }
 
-      final hasPermission =
-          await HealthConnectExceptionHandler.hasRequiredPermissions();
-      if (!hasPermission) {
-        final granted = await health.requestAuthorization([
-          HealthDataType.STEPS,
-        ]);
+      // Request both READ and WRITE permissions for STEPS
+      final granted = await health.requestAuthorization(
+        [HealthDataType.STEPS, HealthDataType.STEPS],
+        permissions: [HealthDataAccess.READ, HealthDataAccess.WRITE],
+      );
 
-        if (!granted) {
-          throw HealthConnectExceptionHandler.createPermissionDeniedException();
-        }
+      if (!granted) {
+        throw HealthConnectExceptionHandler.createPermissionDeniedException();
       }
 
       return true;
@@ -163,6 +162,77 @@ class HealthDataSourceImpl implements HealthDataSource {
       }
 
       return weeklyData;
+    }
+  }
+
+  @override
+  Future<bool> writeMockStepsData() async {
+    try {
+      final now = DateTime.now();
+      final List<HealthDataPoint> healthDataPoints = [];
+      
+      // Mock step counts for last 7 days
+      final mockStepsData = [
+        8234,  // 6 days ago
+        6789,  // 5 days ago
+        12456, // 4 days ago
+        9876,  // 3 days ago
+        11234, // 2 days ago
+        7543,  // 1 day ago
+        5432,  // today
+      ];
+
+      for (int i = 6; i >= 0; i--) {
+        final date = now.subtract(Duration(days: i));
+        final startOfDay = DateTime(date.year, date.month, date.day);
+        final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+        final steps = mockStepsData[6 - i];
+
+        final healthDataPoint = HealthDataPoint(
+          uuid: 'mock-${date.millisecondsSinceEpoch}',
+          value: NumericHealthValue(numericValue: steps.toDouble()),
+          type: HealthDataType.STEPS,
+          unit: HealthDataUnit.COUNT,
+          dateFrom: startOfDay,
+          dateTo: endOfDay,
+          sourcePlatform: HealthPlatformType.googleHealthConnect,
+          sourceDeviceId: 'mock-device',
+          sourceId: 'flutter-assessment-mock',
+          sourceName: 'Steps Tracker App',
+        );
+
+        healthDataPoints.add(healthDataPoint);
+      }
+
+      // Write all data points to Health Connect
+      bool success = true;
+      for (final healthDataPoint in healthDataPoints) {
+        try {
+          final result = await health.writeHealthData(
+            value: (healthDataPoint.value as NumericHealthValue).numericValue.toDouble(),
+            type: healthDataPoint.type,
+            startTime: healthDataPoint.dateFrom,
+            endTime: healthDataPoint.dateTo,
+          );
+          if (!result) {
+            success = false;
+          }
+        } catch (e) {
+          dev.log('Failed to write data point: $e');
+          success = false;
+        }
+      }
+      
+      if (success) {
+        dev.log('Mock step data written successfully for last 7 days');
+      } else {
+        dev.log('Failed to write mock step data');
+      }
+      
+      return success;
+    } catch (e) {
+      dev.log('Error writing mock step data: $e');
+      return false;
     }
   }
 }

@@ -36,4 +36,13 @@ class StepsRepositoryImpl implements StepsRepository {
       return false;
     }
   }
+
+  @override
+  Future<bool> writeMockStepsData() async {
+    try {
+      return await dataSource.writeMockStepsData();
+    } catch (e) {
+      return false;
+    }
+  }
 }

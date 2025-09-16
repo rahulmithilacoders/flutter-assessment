@@ -5,4 +5,5 @@ abstract class StepsRepository {
   Future<StepData?> getTodaySteps();
   Future<List<DailyStepSummary>?> getWeeklySteps();
   Future<bool> requestPermissions();
+  Future<bool> writeMockStepsData();
 }

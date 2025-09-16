@@ -7,6 +7,7 @@ import 'features/steps_tracker/domain/repositories/steps_repository.dart';
 import 'features/steps_tracker/domain/usecases/get_today_steps.dart';
 import 'features/steps_tracker/domain/usecases/get_weekly_steps.dart';
 import 'features/steps_tracker/domain/usecases/request_health_permissions.dart';
+import 'features/steps_tracker/domain/usecases/write_mock_steps_data.dart';
 import 'features/steps_tracker/presentation/bloc/steps_tracker_bloc.dart';
 
 final sl = GetIt.instance;
@@ -26,6 +27,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetTodaySteps(sl()));
   sl.registerLazySingleton(() => GetWeeklySteps(sl()));
   sl.registerLazySingleton(() => RequestHealthPermissions(sl()));
+  sl.registerLazySingleton(() => WriteMockStepsData(sl()));
 
   // Repository
   sl.registerLazySingleton<StepsRepository>(

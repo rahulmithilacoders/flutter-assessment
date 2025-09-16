@@ -202,7 +202,10 @@ class HealthConnectExceptionHandler {
 
   static Future<void> _requestPermissions() async {
     final health = Health();
-    await health.requestAuthorization(_requiredTypes);
+    await health.requestAuthorization(
+      [HealthDataType.STEPS, HealthDataType.STEPS],
+      permissions: [HealthDataAccess.READ, HealthDataAccess.WRITE],
+    );
   }
 
   static Future<bool> isHealthConnectInstalled() async {
@@ -219,7 +222,17 @@ class HealthConnectExceptionHandler {
   static Future<bool> hasRequiredPermissions() async {
     try {
       final health = Health();
-      return await health.hasPermissions(_requiredTypes) ?? false;
+      final hasReadPermissions = await health.hasPermissions(
+        [HealthDataType.STEPS],
+        permissions: [HealthDataAccess.READ],
+      ) ?? false;
+      
+      final hasWritePermissions = await health.hasPermissions(
+        [HealthDataType.STEPS],
+        permissions: [HealthDataAccess.WRITE],
+      ) ?? false;
+      
+      return hasReadPermissions && hasWritePermissions;
     } catch (e) {
       return false;
     }
