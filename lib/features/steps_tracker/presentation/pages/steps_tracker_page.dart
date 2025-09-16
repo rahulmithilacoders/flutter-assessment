@@ -30,6 +30,8 @@ class StepsTrackerView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final GlobalKey<RefreshIndicatorState> refreshIndicatorKey =
+        GlobalKey<RefreshIndicatorState>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Steps Tracker'),
@@ -45,8 +47,13 @@ class StepsTrackerView extends StatelessWidget {
             builder: (context, state) {
               return IconButton(
                 icon: const Icon(Icons.refresh, color: Colors.black),
-                onPressed: () {
-                  context.read<StepsTrackerBloc>().add(RefreshStepsDataEvent());
+                onPressed: () async {
+                  refreshIndicatorKey.currentState?.show();
+                  if (context.mounted) {
+                    context.read<StepsTrackerBloc>().add(
+                      RefreshStepsDataEvent(),
+                    );
+                  }
                 },
               );
             },
@@ -54,8 +61,13 @@ class StepsTrackerView extends StatelessWidget {
         ],
       ),
       body: RefreshIndicator(
+        key: refreshIndicatorKey,
         onRefresh: () async {
-          context.read<StepsTrackerBloc>().add(RefreshStepsDataEvent());
+          await Future.delayed(const Duration(seconds: 2), () {
+            if (context.mounted) {
+              context.read<StepsTrackerBloc>().add(RefreshStepsDataEvent());
+            }
+          });
         },
         child: BlocConsumer<StepsTrackerBloc, StepsTrackerState>(
           listener: (context, state) {
@@ -129,20 +141,20 @@ class StepsTrackerView extends StatelessWidget {
         onPressed: () async {
           final writeMockData = sl<WriteMockStepsData>();
           final success = await writeMockData(NoParams());
-          
+
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  success 
-                    ? 'Mock step data written successfully! Refresh to see data.'
-                    : 'Failed to write mock data. Please grant WRITE permissions in Health Connect.',
+                  success
+                      ? 'Mock step data written successfully! Refresh to see data.'
+                      : 'Failed to write mock data. Please grant WRITE permissions in Health Connect.',
                 ),
                 backgroundColor: success ? Colors.green : Colors.red,
                 duration: Duration(seconds: success ? 3 : 5),
               ),
             );
-            
+
             if (success) {
               // Refresh data after writing mock data
               context.read<StepsTrackerBloc>().add(RefreshStepsDataEvent());
